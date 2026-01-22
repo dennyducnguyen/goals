@@ -131,6 +131,27 @@ export default function Index({ auth, tasks, filters, projects, users, potential
                                     </select>
                                 </div>
                                 <div>
+                                    <InputLabel htmlFor="assigned_to" value="Assignee" />
+                                    <select
+                                        id="assigned_to"
+                                        value={data.assigned_to}
+                                        onChange={e => setData('assigned_to', e.target.value)}
+                                        className="w-full border-gray-300 rounded-md"
+                                    >
+                                        {users.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
+                                    </select>
+                                </div>
+                                <div>
+                                    <InputLabel htmlFor="due_date" value="Due Date" />
+                                    <TextInput
+                                        id="due_date"
+                                        type="date"
+                                        value={data.due_date}
+                                        onChange={e => setData('due_date', e.target.value)}
+                                        className="w-full"
+                                    />
+                                </div>
+                                <div>
                                     <InputLabel htmlFor="priority" value="Priority" />
                                     <select id="priority" value={data.priority} onChange={e => setData('priority', e.target.value)} className="w-full border-gray-300 rounded-md">
                                         <option value="low">Low</option>

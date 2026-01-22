@@ -121,7 +121,16 @@ export default function Show({ auth, task, projects, users, potential_parents })
                             <div className="bg-gray-50 p-4 rounded-lg space-y-4">
                                 <div>
                                     <span className="text-xs font-bold text-gray-500 uppercase">Project</span>
-                                    <div className="text-gray-900">{task.project ? task.project.title : 'General'}</div>
+                                    <select
+                                        value={task.project_id || ''}
+                                        onChange={(e) => router.put(route('tasks.update', task.id), { ...task, project_id: e.target.value || null }, { preserveScroll: true, preserveState: true })}
+                                        className="block w-full mt-1 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                    >
+                                        <option value="">General (No Project)</option>
+                                        {projects.map(project => (
+                                            <option key={project.id} value={project.id}>{project.title}</option>
+                                        ))}
+                                    </select>
                                 </div>
                                 <div>
                                     <span className="text-xs font-bold text-gray-500 uppercase">Parent Task</span>
@@ -177,12 +186,17 @@ export default function Show({ auth, task, projects, users, potential_parents })
                                     </label>
                                 </div>
                                 <div>
-                                    <span className="text-xs font-bold text-gray-500 uppercase">Due Date</span>
+                                    <div className="flex items-center gap-2 mb-1">
+                                        <span className="text-xs font-bold text-gray-500 uppercase">DUE DATE:</span>
+                                        <span className="text-sm font-medium text-gray-900">
+                                            {task.due_date ? new Date(task.due_date).toLocaleDateString('en-GB') : 'Set Date'}
+                                        </span>
+                                    </div>
                                     <input
                                         type="date"
                                         value={task.due_date || ''}
                                         onChange={(e) => router.put(route('tasks.update', task.id), { ...task, due_date: e.target.value }, { preserveScroll: true, preserveState: true })}
-                                        className="block w-full mt-1 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                        className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                                     />
                                 </div>
                             </div>

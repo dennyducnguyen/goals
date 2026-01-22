@@ -13,12 +13,14 @@ class CommentController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request, string $type, $id): RedirectResponse
+    public function store(Request $request, $id): RedirectResponse
     {
         $validated = $request->validate([
             'content' => 'required|string',
             'parent_id' => 'nullable|exists:comments,id',
         ]);
+
+        $type = $request->route('type');
 
         $model = null;
         if ($type === 'project') {
