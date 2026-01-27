@@ -5,6 +5,8 @@ import TaskStatusSelect from '@/Components/TaskStatusSelect';
 import TaskPrioritySelect from '@/Components/TaskPrioritySelect';
 import ProjectSelectHeader from '@/Components/ProjectSelectHeader';
 import InputError from '@/Components/InputError';
+import MarkdownEditor from '@/Components/MarkdownEditor';
+import MarkdownRenderer from '@/Components/MarkdownRenderer';
 
 import { useState } from 'react';
 
@@ -91,11 +93,12 @@ export default function Show({ auth, task, projects, users, potential_parents })
 
                                 {isEditingDesc ? (
                                     <div className="space-y-4">
-                                        <textarea
+                                        <MarkdownEditor
                                             value={description}
                                             onChange={(e) => setDescription(e.target.value)}
                                             className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 min-h-[150px]"
                                             placeholder="Enter task description..."
+                                            rows={8}
                                         />
                                         <div className="flex gap-2">
                                             <button
@@ -113,8 +116,12 @@ export default function Show({ auth, task, projects, users, potential_parents })
                                         </div>
                                     </div>
                                 ) : (
-                                    <div className="prose max-w-none text-gray-700 whitespace-pre-wrap border p-4 rounded bg-gray-50 min-h-[100px]">
-                                        {task.description || <span className="italic text-gray-400">No description provided.</span>}
+                                    <div className="prose max-w-none text-gray-700 border p-4 rounded bg-gray-50 min-h-[100px]">
+                                        {task.description ? (
+                                            <MarkdownRenderer content={task.description} />
+                                        ) : (
+                                            <span className="italic text-gray-400">No description provided.</span>
+                                        )}
                                     </div>
                                 )}
                             </div>

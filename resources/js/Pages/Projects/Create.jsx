@@ -3,6 +3,7 @@ import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
+import MarkdownEditor from '@/Components/MarkdownEditor';
 import { Head, useForm } from '@inertiajs/react';
 
 export default function Create({ auth }) {
@@ -45,14 +46,13 @@ export default function Create({ auth }) {
 
                                 <div className="mt-4">
                                     <InputLabel htmlFor="description" value="Description" />
-                                    <textarea
-                                        id="description"
-                                        name="description"
+                                    <MarkdownEditor
                                         value={data.description}
-                                        className="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm"
-                                        rows="4"
                                         onChange={(e) => setData('description', e.target.value)}
-                                    ></textarea>
+                                        className="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm"
+                                        rows={4}
+                                        placeholder="Project description..."
+                                    />
                                     <InputError message={errors.description} className="mt-2" />
                                 </div>
 

@@ -4,6 +4,9 @@ import { useState } from 'react';
 import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import PrimaryButton from '@/Components/PrimaryButton';
+import TaskPrioritySelect from '@/Components/TaskPrioritySelect';
+import MarkdownEditor from '@/Components/MarkdownEditor';
+import MarkdownRenderer from '@/Components/MarkdownRenderer';
 import TextInput from '@/Components/TextInput';
 import Comments from '@/Components/Comments';
 
@@ -88,11 +91,11 @@ export default function Show({ auth, project }) {
                                 </div>
                                 <div>
                                     <InputLabel htmlFor="edit_description" value="Description" />
-                                    <textarea
-                                        id="edit_description"
+                                    <MarkdownEditor
                                         value={editData.description}
                                         onChange={(e) => setEditData({ ...editData, description: e.target.value })}
                                         className="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm min-h-[100px]"
+                                        rows={5}
                                     />
                                 </div>
                                 <div className="flex justify-end gap-2">
@@ -114,7 +117,9 @@ export default function Show({ auth, project }) {
                             <div className="flex justify-between items-start">
                                 <div>
                                     <h4 className="font-semibold text-xl mb-2">{project.title}</h4>
-                                    <p className="text-gray-600 whitespace-pre-wrap">{project.description}</p>
+                                    <div className="text-gray-600">
+                                        <MarkdownRenderer content={project.description} />
+                                    </div>
                                 </div>
                                 <div className="text-sm text-gray-500 min-w-[150px] text-right">
                                     <div className="mb-1"><span className="font-semibold">Status:</span> {project.status}</div>
@@ -228,13 +233,13 @@ export default function Show({ auth, project }) {
                                             </div>
                                             <div className="mt-4">
                                                 <InputLabel htmlFor="doc_content" value="Content / Details" />
-                                                <textarea
-                                                    id="doc_content"
+                                                <MarkdownEditor
                                                     value={data.content}
-                                                    className="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm"
-                                                    rows="3"
                                                     onChange={(e) => setData('content', e.target.value)}
-                                                ></textarea>
+                                                    className="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm min-h-[150px]"
+                                                    rows={6}
+                                                    placeholder="Enter content details..."
+                                                />
                                                 <InputError message={errors.content} className="mt-2" />
                                             </div>
                                             <div className="mt-4 text-right">
@@ -257,8 +262,8 @@ export default function Show({ auth, project }) {
                                                         Delete
                                                     </Link>
                                                 </div>
-                                                <div className="mt-2 text-sm text-gray-700 whitespace-pre-wrap">
-                                                    {doc.content}
+                                                <div className="mt-2 text-sm text-gray-700">
+                                                    <MarkdownRenderer content={doc.content} />
                                                 </div>
                                             </div>
                                         ))}

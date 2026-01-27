@@ -43,6 +43,11 @@ Route::middleware(['auth', 'verified', \App\Http\Middleware\EnsureUserIsActive::
         ->name('tasks.comments.store');
     Route::delete('comments/{comment}', [\App\Http\Controllers\CommentController::class, 'destroy'])->name('comments.destroy');
     Route::resource('tasks', \App\Http\Controllers\TaskController::class);
+
+    // Image Upload
+    Route::post('/upload-image', \App\Http\Controllers\ImageUploadController::class)->name('image.upload');
+
 });
 
 require __DIR__ . '/auth.php';
+
