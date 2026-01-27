@@ -5,22 +5,21 @@ import { useState } from 'react';
 import MarkdownEditor from '@/Components/MarkdownEditor';
 import MarkdownRenderer from '@/Components/MarkdownRenderer';
 
-export default function Comments({ comments, projectId, taskId }) {
+export default function Comments({ comments, modelId, type }) {
     const { auth } = usePage().props;
     const [replyingTo, setReplyingTo] = useState(null);
 
     const { data, setData, post, processing, reset, errors } = useForm({
         content: '',
         parent_id: null,
-        type: projectId ? 'project' : 'task', // Ensure type is set
+        type: type,
     });
 
     const submit = (e) => {
         e.preventDefault();
-        const routeName = projectId ? 'projects.comments.store' : 'tasks.comments.store';
-        const id = projectId || taskId;
+        const routeName = type === 'project' ? 'projects.comments.store' : 'tasks.comments.store';
 
-        post(route(routeName, id), {
+        post(route(routeName, modelId), {
             onSuccess: () => {
                 reset();
                 setReplyingTo(null);
