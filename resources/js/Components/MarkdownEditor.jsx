@@ -46,7 +46,7 @@ export default function MarkdownEditor({ value, onChange, className, placeholder
         formData.append('image', file);
 
         try {
-            const response = await axios.post(route('image.upload'), formData, {
+            const response = await window.axios.post(route('image.upload'), formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
@@ -66,7 +66,17 @@ export default function MarkdownEditor({ value, onChange, className, placeholder
             // Remove placeholder on error
             const valWithoutPlaceholder = currentVal.replace(loadingPlaceholder, '');
             onChange({ target: { value: valWithoutPlaceholder } });
-            alert('Failed to upload image. Please try again.');
+
+            let errorMessage = 'Failed to upload image.';
+            if (error.response) {
+                errorMessage += ` (Status: ${error.response.status} - ${error.response.statusText})`;
+                if (error.response.data && error.response.data.message) {
+                    errorMessage += `\n${error.response.data.message}`;
+                }
+            } else if (error.message) {
+                errorMessage += ` ${error.message}`;
+            }
+            alert(errorMessage);
         } finally {
             setIsUploading(false);
         }
