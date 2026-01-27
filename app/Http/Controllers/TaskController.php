@@ -26,7 +26,7 @@ class TaskController extends Controller
         return Inertia::render('Tasks/Show', [
             'task' => $task,
             'projects' => Project::all(),
-            'users' => User::all(),
+            'users' => User::where('is_active', true)->get(),
             'potential_parents' => Task::where('id', '!=', $task->id)->select('id', 'title', 'project_id')->get(),
         ]);
     }
@@ -35,36 +35,45 @@ class TaskController extends Controller
     {
         $query = Task::with(['project', 'assignee']);
 
-        if ($request->has('filter')) {
-            switch ($request->filter) {
-                case 'my_tasks':
-                    $query->myTasks(Auth::id());
-                    break;
-                case 'today':
-                    $query->where(function ($q) {
-                        $q->myTasks(Auth::id())->dueToday();
-                    });
-                    break;
-                case 'project':
-                    if ($request->has('project_id')) {
-                        $query->where('project_id', $request->project_id);
-                    }
-                    break;
+        // Filter by Project
+        if ($request->has('project_id')) {
+            if ($request->project_id === 'independent') {
+                $query->whereNull('project_id');
+            } elseif ($request->project_id !== 'all') {
+                $query->where('project_id', $request->project_id);
             }
-        }
-
-        // Default or "independent" tasks
-        if ($request->filter === 'independent') {
+        } elseif ($request->filter === 'independent') {
+            // Keep backward compatibility for 'filter=independent' if needed, or just rely on project_id=independent
             $query->whereNull('project_id');
         }
 
+        // Filter by Assignee
+        if ($request->has('assignee_id')) {
+            if ($request->assignee_id !== 'all') {
+                $query->where('assigned_to', $request->assignee_id);
+            }
+        } elseif ($request->filter === 'my_tasks') {
+            // Keep backward compatibility
+            $query->myTasks(Auth::id());
+        }
+
+        // Filter by Date
+        if ($request->date_filter === 'today' || $request->filter === 'today') {
+            $query->whereDate('due_date', now());
+        }
+
+        // Filter by Status
+        if ($request->has('status') && $request->status !== 'all') {
+            $query->where('status', $request->status);
+        }
+
         $tasks = $query->latest()->get();
-        $projects = Project::all(); // For filtering or creating
-        $users = User::all(); // For assignment
+        $projects = Project::all();
+        $users = User::where('is_active', true)->get();
 
         return Inertia::render('Tasks/Index', [
             'tasks' => $tasks,
-            'filters' => $request->only(['filter', 'project_id']),
+            'filters' => $request->all(), // Pass all params back for state retention
             'projects' => $projects,
             'users' => $users,
             'potential_parents' => Task::select('id', 'title', 'project_id')->get(),

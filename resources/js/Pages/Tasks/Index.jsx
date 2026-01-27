@@ -40,8 +40,23 @@ export default function Index({ auth, tasks, filters, projects, users, potential
     };
 
     // Filter Logic
-    const handleFilterChange = (filter) => {
-        router.get(route('tasks.index'), { filter }, { preserveState: true });
+    const handleFilterChange = (filterType) => {
+        const currentParams = new URLSearchParams(window.location.search);
+
+        if (filterType === 'today') {
+            // Toggle today filter
+            if (currentParams.get('date_filter') === 'today') {
+                currentParams.delete('date_filter');
+            } else {
+                if (currentParams.get('filter') === 'today') currentParams.delete('filter'); // clear old
+                currentParams.set('date_filter', 'today');
+            }
+        }
+
+        router.get(route('tasks.index'), Object.fromEntries(currentParams), {
+            preserveState: true,
+            preserveScroll: true
+        });
     };
 
     // Matrix Helpers
@@ -51,6 +66,30 @@ export default function Index({ auth, tasks, filters, projects, users, potential
         q3: tasks.filter(t => t.is_urgent && !t.is_important), // Delegate
         q4: tasks.filter(t => !t.is_urgent && !t.is_important), // Eliminate
     };
+
+    // Tree View Logic (Pre-calculated for reuse in Desktop and Mobile views)
+    const organizedTasks = (() => {
+        const taskMap = {};
+        const roots = [];
+        // Deep copy to avoid mutating props if necessary; shallow copy task objects
+        tasks.forEach(t => taskMap[t.id] = { ...t, children: [] });
+        tasks.forEach(t => {
+            if (t.parent_id && taskMap[t.parent_id]) {
+                taskMap[t.parent_id].children.push(taskMap[t.id]);
+            } else {
+                roots.push(taskMap[t.id]);
+            }
+        });
+        const flatten = (nodes, level = 0) => {
+            let result = [];
+            nodes.forEach(n => {
+                result.push({ ...n, level });
+                if (n.children.length > 0) result = result.concat(flatten(n.children, level + 1));
+            });
+            return result;
+        };
+        return flatten(roots);
+    })();
 
     return (
         <AuthenticatedLayout
@@ -72,10 +111,89 @@ export default function Index({ auth, tasks, filters, projects, users, potential
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
                     {/* Controls */}
                     <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
-                        <div className="flex gap-2">
-                            <button onClick={() => handleFilterChange('my_tasks')} className={`px-4 py-2 rounded ${filters.filter === 'my_tasks' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700'}`}>My Tasks</button>
-                            <button onClick={() => handleFilterChange('today')} className={`px-4 py-2 rounded ${filters.filter === 'today' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700'}`}>Today</button>
-                            <button onClick={() => router.get(route('tasks.index'))} className={`px-4 py-2 rounded ${!filters.filter ? 'bg-blue-600 text-white' : 'bg-white text-gray-700'}`}>All</button>
+                        <div className="flex gap-2 items-center flex-wrap">
+                            {/* Assignee Filter */}
+                            <select
+                                value={filters.assignee_id || (filters.filter === 'my_tasks' ? auth.user.id : 'all')}
+                                onChange={(e) => {
+                                    const value = e.target.value;
+                                    const currentParams = new URLSearchParams(window.location.search);
+
+                                    if (value === 'all') {
+                                        currentParams.delete('assignee_id');
+                                    } else {
+                                        currentParams.set('assignee_id', value);
+                                    }
+
+                                    // Remove old 'filter' param
+                                    currentParams.delete('filter');
+
+                                    router.get(route('tasks.index'), Object.fromEntries(currentParams), {
+                                        preserveState: true,
+                                        preserveScroll: true
+                                    });
+                                }}
+                                className="rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                            >
+                                <option value="all">All Tasks</option>
+                                <option value={auth.user.id}>My Tasks</option>
+                                <option disabled>──────────</option>
+                                {users.filter(u => u.is_active && u.id !== auth.user.id).map(user => (
+                                    <option key={user.id} value={user.id}>{user.name}</option>
+                                ))}
+                            </select>
+
+                            <select
+                                value={(filters.filter === 'today' || filters.date_filter === 'today') ? 'today' : 'all'}
+                                onChange={(e) => {
+                                    const value = e.target.value;
+                                    const currentParams = new URLSearchParams(window.location.search);
+
+                                    if (value === 'today') {
+                                        if (currentParams.get('filter') === 'today') currentParams.delete('filter');
+                                        currentParams.set('date_filter', 'today');
+                                    } else {
+                                        currentParams.delete('date_filter');
+                                        if (currentParams.get('filter') === 'today') currentParams.delete('filter');
+                                    }
+
+                                    router.get(route('tasks.index'), Object.fromEntries(currentParams), {
+                                        preserveState: true,
+                                        preserveScroll: true
+                                    });
+                                }}
+                                className="rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                            >
+                                <option value="all">All Days</option>
+                                <option value="today">Today</option>
+                            </select>
+
+                            <select
+                                value={filters.status || 'all'}
+                                onChange={(e) => {
+                                    const value = e.target.value;
+                                    const currentParams = new URLSearchParams(window.location.search);
+
+                                    if (value === 'all') {
+                                        currentParams.delete('status');
+                                    } else {
+                                        currentParams.set('status', value);
+                                    }
+
+                                    router.get(route('tasks.index'), Object.fromEntries(currentParams), {
+                                        preserveState: true,
+                                        preserveScroll: true
+                                    });
+                                }}
+                                className="rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                            >
+                                <option value="all">All Status</option>
+                                <option value="doing">Doing</option>
+                                <option value="todo">Todo</option>
+                                <option value="pending">Pending</option>
+                                <option value="done">Done</option>
+                                <option value="cancel">Cancel</option>
+                            </select>
                         </div>
                         <div className="flex gap-2">
                             <button onClick={() => setViewMode('list')} className={`px-4 py-2 rounded ${viewMode === 'list' ? 'bg-gray-800 text-white' : 'bg-white text-gray-700'}`}>List View</button>
@@ -179,7 +297,7 @@ export default function Index({ auth, tasks, filters, projects, users, potential
                     {viewMode === 'list' ? (
                         <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
                             <table className="min-w-full divide-y divide-gray-200">
-                                <thead className="bg-gray-50">
+                                <thead className="bg-gray-50 hidden md:table-header-group">
                                     <tr>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">TASK</th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">General/Project</th>
@@ -189,54 +307,65 @@ export default function Index({ auth, tasks, filters, projects, users, potential
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Priority</th>
                                     </tr>
                                 </thead>
-                                <tbody className="bg-white divide-y divide-gray-200">
-                                    {/* Tree View Logic */}
-                                    {(() => {
-                                        const taskMap = {};
-                                        const roots = [];
-                                        tasks.forEach(t => taskMap[t.id] = { ...t, children: [] });
-                                        tasks.forEach(t => {
-                                            if (t.parent_id && taskMap[t.parent_id]) {
-                                                taskMap[t.parent_id].children.push(taskMap[t.id]);
-                                            } else {
-                                                roots.push(taskMap[t.id]);
-                                            }
-                                        });
-                                        const flatten = (nodes, level = 0) => {
-                                            let result = [];
-                                            nodes.forEach(n => {
-                                                result.push({ ...n, level });
-                                                if (n.children.length > 0) result = result.concat(flatten(n.children, level + 1));
-                                            });
-                                            return result;
-                                        };
-                                        const organizedTasks = flatten(roots);
-
-                                        return organizedTasks.map(task => (
-                                            <tr key={task.id} onClick={() => router.visit(route('tasks.show', task.id))} className="cursor-pointer hover:bg-gray-50">
-                                                <td className="px-6 py-4 font-medium text-gray-900">
-                                                    <div style={{ paddingLeft: `${task.level * 20}px` }} className="flex items-center">
-                                                        {task.level > 0 && <span className="mr-1 text-gray-500 font-bold">+</span>}
-                                                        <div>{task.title}</div>
-                                                    </div>
-                                                    <div className="text-xs text-gray-400 italic mt-1" style={{ paddingLeft: `${task.level * 20}px` }}>
-                                                        created {new Date(task.created_at).toLocaleDateString('en-GB')}
-                                                    </div>
-                                                </td>
-                                                <td className="px-6 py-4">{task.project ? task.project.title : 'General'}</td>
-                                                <td className="px-6 py-4">{task.assignee.name}</td>
-                                                <td className="px-6 py-4">
-                                                    {task.due_date ? new Date(task.due_date).toLocaleDateString('en-GB') : '-'}
-                                                </td>
-                                                <td className="px-6 py-4">
-                                                    <TaskStatusSelect task={task} />
-                                                </td>
-                                                <td className="px-6 py-4 capitalize">{task.priority}</td>
-                                            </tr>
-                                        ));
-                                    })()}
+                                <tbody className="bg-white divide-y divide-gray-200 hidden md:table-row-group">
+                                    {organizedTasks.map(task => (
+                                        <tr key={task.id} onClick={() => router.visit(route('tasks.show', task.id))} className="cursor-pointer hover:bg-gray-50">
+                                            <td className="px-6 py-4 font-medium text-gray-900">
+                                                <div style={{ paddingLeft: `${task.level * 20}px` }} className="flex items-center">
+                                                    {task.level > 0 && <span className="mr-1 text-gray-500 font-bold">+</span>}
+                                                    <div>{task.title}</div>
+                                                </div>
+                                                <div className="text-xs text-gray-400 italic mt-1" style={{ paddingLeft: `${task.level * 20}px` }}>
+                                                    created {new Date(task.created_at).toLocaleDateString('en-GB')}
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4">{task.project ? task.project.title : 'General'}</td>
+                                            <td className="px-6 py-4">{task.assignee.name}</td>
+                                            <td className="px-6 py-4">
+                                                {task.due_date ? new Date(task.due_date).toLocaleDateString('en-GB') : '-'}
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <TaskStatusSelect task={task} />
+                                            </td>
+                                            <td className="px-6 py-4 capitalize">{task.priority}</td>
+                                        </tr>
+                                    ))}
                                 </tbody>
                             </table>
+
+                            {/* Mobile Card View */}
+                            <div className="md:hidden space-y-4">
+                                {organizedTasks.map((task) => (
+                                    <div key={task.id} className="bg-white p-4 rounded-lg shadow border border-gray-200" onClick={() => router.visit(route('tasks.show', task.id))}>
+                                        <div className="flex justify-between items-start mb-2">
+                                            <div style={{ paddingLeft: `${task.level * 15}px` }} className="font-semibold text-gray-900 text-lg flex items-center">
+                                                {task.level > 0 && <span className="mr-1 text-gray-500">+</span>}
+                                                {task.title}
+                                            </div>
+                                            <span className={`px-2 py-1 text-xs rounded-full uppercase font-bold ${task.priority === 'high' ? 'bg-red-100 text-red-800' :
+                                                task.priority === 'medium' ? 'bg-yellow-100 text-yellow-800' :
+                                                    'bg-green-100 text-green-800'
+                                                }`}>
+                                                {task.priority}
+                                            </span>
+                                        </div>
+
+                                        <div className="text-sm text-gray-600 mb-2 pl-2 border-l-2 border-gray-100 ml-1">
+                                            {task.project ? task.project.title : 'General'} • {task.assignee.name}
+                                        </div>
+
+                                        <div className="flex justify-between items-center mt-4 pt-3 border-t border-gray-100">
+                                            <div className="text-sm text-gray-500">
+                                                Due: <span className="font-medium text-gray-700">{task.due_date ? new Date(task.due_date).toLocaleDateString('en-GB') : '-'}</span>
+                                            </div>
+                                            <div onClick={(e) => e.stopPropagation()}>
+                                                <TaskStatusSelect task={task} />
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
                             {tasks.length === 0 && <p className="text-center text-gray-500 mt-4">No tasks found.</p>}
                         </div>
                     ) : (
