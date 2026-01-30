@@ -8,6 +8,7 @@ import InputError from '@/Components/InputError';
 import Checkbox from '@/Components/Checkbox';
 import TaskStatusSelect from '@/Components/TaskStatusSelect';
 import ProjectSelectHeader from '@/Components/ProjectSelectHeader';
+import MarkdownEditor from '@/Components/MarkdownEditor';
 
 export default function Index({ auth, tasks, filters, projects, users, potential_parents }) {
     const [viewMode, setViewMode] = useState('list'); // 'list' or 'matrix'
@@ -208,12 +209,19 @@ export default function Index({ auth, tasks, filters, projects, users, potential
                             <form onSubmit={submitTask} className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="col-span-2">
                                     <InputLabel htmlFor="title" value="Title" />
-                                    <TextInput id="title" value={data.title} onChange={e => setData('title', e.target.value)} className="w-full" required />
+                                    <TextInput id="title" value={data.title} onChange={e => setData('title', e.target.value)} className="w-full" style={{ paddingLeft: '3px', paddingRight: '3px' }} required />
                                     <InputError message={errors.title} />
                                 </div>
                                 <div className="col-span-2">
                                     <InputLabel htmlFor="description" value="Description" />
-                                    <TextInput id="description" value={data.description} onChange={e => setData('description', e.target.value)} className="w-full" />
+                                    <MarkdownEditor
+                                        value={data.description}
+                                        onChange={e => setData('description', e.target.value)}
+                                        className="w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm"
+                                        rows={4}
+                                        placeholder="Mô tả task..."
+                                    />
+                                    <InputError message={errors.description} />
                                 </div>
                                 <div>
                                     <InputLabel htmlFor="parent_id" value="Parent Task" />

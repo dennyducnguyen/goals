@@ -37,6 +37,7 @@ export default function Create({ auth }) {
                                         name="title"
                                         value={data.title}
                                         className="mt-1 block w-full"
+                                        style={{ paddingLeft: '3px', paddingRight: '3px' }}
                                         isFocused={true}
                                         onChange={(e) => setData('title', e.target.value)}
                                         required
