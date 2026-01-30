@@ -29,13 +29,15 @@ export default function Show({ auth, task, projects, users, potential_parents })
         <AuthenticatedLayout
             user={auth.user}
             header={
-                <div className="flex items-center">
-                    <h2 className="font-semibold text-xl text-gray-800 leading-tight">Task: {task.title}</h2>
-                    <ProjectSelectHeader
-                        projects={projects}
-                        currentProjectId={task.project_id}
-                        isGeneral={!task.project_id}
-                    />
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                    <h2 className="font-semibold text-xl text-gray-800 leading-tight break-words">Task: {task.title}</h2>
+                    <div className="flex-shrink-0">
+                        <ProjectSelectHeader
+                            projects={projects}
+                            currentProjectId={task.project_id}
+                            isGeneral={!task.project_id}
+                        />
+                    </div>
                 </div>
             }
         >
