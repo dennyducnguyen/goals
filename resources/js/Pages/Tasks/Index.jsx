@@ -136,7 +136,7 @@ export default function Index({ auth, tasks, filters, projects, users, potential
                                 }}
                                 className="rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                             >
-                                <option value="all">All Tasks</option>
+                                <option value="all">All People</option>
                                 <option value={auth.user.id}>My Tasks</option>
                                 <option disabled>──────────</option>
                                 {users.filter(u => u.is_active && u.id !== auth.user.id).map(user => (
@@ -307,18 +307,18 @@ export default function Index({ auth, tasks, filters, projects, users, potential
                             <table className="min-w-full divide-y divide-gray-200">
                                 <thead className="bg-gray-50 hidden md:table-header-group">
                                     <tr>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">TASK</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">General/Project</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Assignee</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Due Date</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Priority</th>
+                                        <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">TASK</th>
+                                        <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">General/Project</th>
+                                        <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Assignee</th>
+                                        <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Due Date</th>
+                                        <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[140px]">Status</th>
+                                        <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Priority</th>
                                     </tr>
                                 </thead>
                                 <tbody className="bg-white divide-y divide-gray-200 hidden md:table-row-group">
                                     {organizedTasks.map(task => (
                                         <tr key={task.id} onClick={() => router.visit(route('tasks.show', task.id))} className="cursor-pointer hover:bg-gray-50">
-                                            <td className="px-6 py-4 font-medium text-gray-900">
+                                            <td className="px-3 py-4 font-medium text-gray-900">
                                                 <div style={{ paddingLeft: `${task.level * 20}px` }} className="flex items-center">
                                                     {task.level > 0 && <span className="mr-1 text-gray-500 font-bold">+</span>}
                                                     <div>{task.title}</div>
@@ -327,15 +327,15 @@ export default function Index({ auth, tasks, filters, projects, users, potential
                                                     created {new Date(task.created_at).toLocaleDateString('en-GB')}
                                                 </div>
                                             </td>
-                                            <td className="px-6 py-4">{task.project ? task.project.title : 'General'}</td>
-                                            <td className="px-6 py-4">{task.assignee.name}</td>
-                                            <td className="px-6 py-4">
+                                            <td className="px-3 py-4">{task.project ? task.project.title : 'General'}</td>
+                                            <td className="px-3 py-4">{task.assignee.name}</td>
+                                            <td className="px-3 py-4 whitespace-nowrap">
                                                 {task.due_date ? new Date(task.due_date).toLocaleDateString('en-GB') : '-'}
                                             </td>
-                                            <td className="px-6 py-4">
+                                            <td className="px-3 py-4 min-w-[140px]">
                                                 <TaskStatusSelect task={task} />
                                             </td>
-                                            <td className="px-6 py-4 capitalize">{task.priority}</td>
+                                            <td className="px-3 py-4 capitalize">{task.priority}</td>
                                         </tr>
                                     ))}
                                 </tbody>
