@@ -14,6 +14,8 @@ Route::get('/', function () {
     ]);
 });
 
+Route::get('s/{token}', [\App\Http\Controllers\ProjectDocumentController::class, 'showPublic'])->name('documents.public');
+
 Route::get('/approval-notice', function () {
     return Inertia::render('Auth/ApprovalNotice');
 })->middleware(['auth'])->name('approval.notice');
@@ -34,6 +36,7 @@ Route::middleware(['auth', 'verified', \App\Http\Middleware\EnsureUserIsActive::
 
     Route::resource('projects', \App\Http\Controllers\ProjectController::class);
     Route::resource('projects.documents', \App\Http\Controllers\ProjectDocumentController::class)->shallow();
+    Route::post('documents/{document}/toggle-share', [\App\Http\Controllers\ProjectDocumentController::class, 'toggleShare'])->name('documents.toggle-share');
     Route::post('projects/{id}/comments', [\App\Http\Controllers\CommentController::class, 'store'])
         ->defaults('type', 'project')
         ->name('projects.comments.store');

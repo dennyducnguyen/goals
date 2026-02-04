@@ -25,6 +25,10 @@ export default function Show({ auth, project }) {
         description: project.description
     });
 
+    // State cho edit document
+    const [editingDocId, setEditingDocId] = useState(null);
+    const [editDocData, setEditDocData] = useState({ title: '', type: '', content: '' });
+
     const submitDoc = (e) => {
         e.preventDefault();
         post(route('projects.documents.store', project.id), {
@@ -32,6 +36,33 @@ export default function Show({ auth, project }) {
                 reset();
                 setShowDocForm(false);
             },
+        });
+    };
+
+    // Hàm xử lý edit document
+    const startEditDoc = (doc) => {
+        setEditingDocId(doc.id);
+        setEditDocData({ title: doc.title, type: doc.type, content: doc.content || '' });
+    };
+
+    const cancelEditDoc = () => {
+        setEditingDocId(null);
+        setEditDocData({ title: '', type: '', content: '' });
+    };
+
+    const saveEditDoc = (docId) => {
+        router.put(route('documents.update', docId), editDocData, {
+            preserveScroll: true,
+            onSuccess: () => {
+                setEditingDocId(null);
+                setEditDocData({ title: '', type: '', content: '' });
+            }
+        });
+    };
+
+    const toggleShareDoc = (docId) => {
+        router.post(route('documents.toggle-share', docId), {}, {
+            preserveScroll: true,
         });
     };
 
@@ -251,20 +282,110 @@ export default function Show({ auth, project }) {
                                     <div className="grid grid-cols-1 gap-4">
                                         {project.documents && project.documents.map((doc) => (
                                             <div key={doc.id} className="border p-4 rounded-lg">
-                                                <div className="flex justify-between">
-                                                    <h4 className="font-bold">{doc.title} <span className="text-xs font-normal text-gray-500 bg-gray-100 px-2 py-1 rounded ml-2">{doc.type}</span></h4>
-                                                    <Link
-                                                        method="delete"
-                                                        href={route('documents.destroy', doc.id)}
-                                                        as="button"
-                                                        className="text-red-600 text-sm hover:underline"
-                                                    >
-                                                        Delete
-                                                    </Link>
-                                                </div>
-                                                <div className="mt-2 text-sm text-gray-700">
-                                                    <MarkdownRenderer content={doc.content} />
-                                                </div>
+                                                {editingDocId === doc.id ? (
+                                                    // Form edit document
+                                                    <div className="space-y-4">
+                                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                            <div>
+                                                                <InputLabel htmlFor={`edit_doc_title_${doc.id}`} value="Title" />
+                                                                <TextInput
+                                                                    id={`edit_doc_title_${doc.id}`}
+                                                                    value={editDocData.title}
+                                                                    className="mt-1 block w-full"
+                                                                    onChange={(e) => setEditDocData({ ...editDocData, title: e.target.value })}
+                                                                    required
+                                                                />
+                                                            </div>
+                                                            <div>
+                                                                <InputLabel htmlFor={`edit_doc_type_${doc.id}`} value="Type" />
+                                                                <select
+                                                                    id={`edit_doc_type_${doc.id}`}
+                                                                    value={editDocData.type}
+                                                                    className="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm"
+                                                                    onChange={(e) => setEditDocData({ ...editDocData, type: e.target.value })}
+                                                                >
+                                                                    <option value="description">Description</option>
+                                                                    <option value="account">Account/Credentials</option>
+                                                                    <option value="guide">Guide/Deployment</option>
+                                                                </select>
+                                                            </div>
+                                                        </div>
+                                                        <div>
+                                                            <InputLabel htmlFor={`edit_doc_content_${doc.id}`} value="Content / Details" />
+                                                            <MarkdownEditor
+                                                                value={editDocData.content}
+                                                                onChange={(e) => setEditDocData({ ...editDocData, content: e.target.value })}
+                                                                className="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm min-h-[150px]"
+                                                                rows={6}
+                                                                placeholder="Enter content details..."
+                                                            />
+                                                        </div>
+                                                        <div className="flex justify-end gap-2">
+                                                            <button
+                                                                onClick={cancelEditDoc}
+                                                                className="bg-gray-200 text-gray-800 px-4 py-2 rounded text-sm hover:bg-gray-300"
+                                                            >
+                                                                Cancel
+                                                            </button>
+                                                            <button
+                                                                onClick={() => saveEditDoc(doc.id)}
+                                                                className="bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700"
+                                                            >
+                                                                Save Changes
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                ) : (
+                                                    // Hiển thị nội dung document
+                                                    <>
+                                                        <div className="flex justify-between">
+                                                            <div className="flex flex-col">
+                                                                <h4 className="font-bold">{doc.title} <span className="text-xs font-normal text-gray-500 bg-gray-100 px-2 py-1 rounded ml-2">{doc.type}</span></h4>
+                                                                {doc.share_token && (
+                                                                    <div className="mt-1 text-xs flex items-center gap-2">
+                                                                        <span className="text-green-600 font-semibold">Shared Publicly:</span>
+                                                                        <a href={route('documents.public', doc.share_token)} target="_blank" className="text-blue-500 hover:underline truncate max-w-[200px] md:max-w-md">
+                                                                            {route('documents.public', doc.share_token)}
+                                                                        </a>
+                                                                        <button
+                                                                            onClick={() => navigator.clipboard.writeText(route('documents.public', doc.share_token))}
+                                                                            className="text-gray-400 hover:text-gray-600"
+                                                                            title="Copy Link"
+                                                                        >
+                                                                            📋
+                                                                        </button>
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                            <div className="flex gap-3 items-start">
+                                                                <button
+                                                                    onClick={() => toggleShareDoc(doc.id)}
+                                                                    className={`text-sm hover:underline ${doc.share_token ? 'text-green-600 font-bold' : 'text-gray-500'}`}
+                                                                    title={doc.share_token ? 'Stop Sharing' : 'Share Publicly'}
+                                                                >
+                                                                    {doc.share_token ? 'Shared' : 'Share'}
+                                                                </button>
+                                                                <button
+                                                                    onClick={() => startEditDoc(doc)}
+                                                                    className="text-blue-600 text-sm hover:underline"
+                                                                >
+                                                                    Edit
+                                                                </button>
+                                                                <Link
+                                                                    method="delete"
+                                                                    href={route('documents.destroy', doc.id)}
+                                                                    as="button"
+                                                                    className="text-red-600 text-sm hover:underline"
+                                                                >
+                                                                    Delete
+                                                                </Link>
+                                                            </div>
+                                                        </div>
+                                                        <div className="mt-2 text-sm text-gray-700">
+                                                            <MarkdownRenderer content={doc.content} />
+                                                        </div>
+                                                    </>
+                                                )}
                                             </div>
                                         ))}
                                         {(!project.documents || project.documents.length === 0) && (
