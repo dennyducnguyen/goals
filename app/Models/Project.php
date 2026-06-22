@@ -30,4 +30,9 @@ class Project extends Model
     {
         return $this->morphMany(Comment::class, 'commentable');
     }
+
+    public function files()
+    {
+        return $this->hasMany(ProjectFile::class);
+    }
 }

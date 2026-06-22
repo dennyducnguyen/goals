@@ -9,6 +9,7 @@ import MarkdownEditor from '@/Components/MarkdownEditor';
 import MarkdownRenderer from '@/Components/MarkdownRenderer';
 import TextInput from '@/Components/TextInput';
 import Comments from '@/Components/Comments';
+import ProjectFilesTab from './Partials/ProjectFilesTab';
 
 export default function Show({ auth, project }) {
     const { data, setData, post, processing, errors, reset } = useForm({
@@ -80,6 +81,7 @@ export default function Show({ auth, project }) {
     const tabs = [
         { id: 'tasks', label: 'Project Tasks' },
         { id: 'documents', label: 'Documents & Information' },
+        { id: 'files', label: 'Files' },
         { id: 'chats', label: 'Chats' },
     ];
 
@@ -392,6 +394,13 @@ export default function Show({ auth, project }) {
                                             <p className="text-gray-500 text-sm">No documents added yet.</p>
                                         )}
                                     </div>
+                                </div>
+                            )}
+
+                            {activeTab === 'files' && (
+                                <div>
+                                    <h3 className="text-lg font-bold mb-4">Project Files</h3>
+                                    <ProjectFilesTab project={project} />
                                 </div>
                             )}
 

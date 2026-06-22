@@ -13,7 +13,9 @@ Dự án được cấu hình deploy tự động qua GitHub Actions lên server
 4. Nếu phát hiện lỗi (ví dụ chưa migrate, thiếu file `.env`, lỗi build npm), tự động đề xuất lệnh chạy sửa lỗi qua SSH hoặc tự động sửa nếu lỗi đơn giản.
 5. Nếu không có lỗi, báo cáo cho người dùng là "Hệ thống hoạt động bình thường, deploy thành công".
 
-## Môi trường Server & Yêu cầu hệ thống (VPS Production)
-- **Node.js**: Yêu cầu bắt buộc **Node.js v20+** (do dự án dùng Vite bản mới). (Đã cấu hình trên VPS).
-- **PHP Extensions**: Kịch bản chạy nền (CLI) đang dùng PHP 8.5. Cần đảm bảo trên server luôn có đủ `php8.5-xml` (cho Composer) và `php8.5-mbstring` (để chạy các lệnh cache Laravel). (Đã cấu hình trên VPS).
+## Quy trình Deploy và Tự động hoá
+- **Deploy tự động (BẮT BUỘC):** Khi nhận được bất kỳ yêu cầu tạo tính năng mới, chỉnh sửa code hoặc fix bug nào, sau khi hoàn thành thay đổi ở môi trường local, Agent **phải tự động thực hiện chuỗi deploy** (bao gồm `git add`, `git commit`, `git push` và SSH vào server chạy các lệnh tương ứng như `migrate`, `storage:link` nếu cần) mà **không cần hỏi xác nhận** (trừ khi liên quan đến thay đổi database rất lớn có nguy cơ hỏng hóc hoặc breaking changes).
+- Dự án được cấu hình deploy tự động qua GitHub Actions lên server `171.244.29.124`.
 - **CI/CD tự động**: Mọi thay đổi code khi được `git push` lên nhánh `main` sẽ kích hoạt GitHub Actions. Action này sẽ SSH tự động vào server, sau đó gọi file `/var/www/goals.imgroup.vn/htdocs/deploy.sh` để tiến hành cài dependencies (`npm run build`, `composer install`), dọn cache và chạy route cache.
+
+## Quy trình Kiểm tra & Phục hồi (Check & Fix) sau khi Deploy

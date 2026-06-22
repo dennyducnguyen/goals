@@ -40,6 +40,7 @@ class ProjectController extends Controller
             'owner',
             'tasks.assignee',
             'documents',
+            'files.user',
             'comments' => function ($query) {
                 $query->whereNull('parent_id')
                     ->with(['user', 'replies.user'])

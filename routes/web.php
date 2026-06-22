@@ -15,6 +15,8 @@ Route::get('/', function () {
 });
 
 Route::get('s/{token}', [\App\Http\Controllers\ProjectDocumentController::class, 'showPublic'])->name('documents.public');
+Route::get('s/files/{token}', [\App\Http\Controllers\ProjectFileController::class, 'showPublic'])->name('files.public.show');
+Route::get('s/files/{token}/download', [\App\Http\Controllers\ProjectFileController::class, 'downloadPublic'])->name('files.public.download');
 
 Route::get('/approval-notice', function () {
     return Inertia::render('Auth/ApprovalNotice');
@@ -49,6 +51,13 @@ Route::middleware(['auth', 'verified', \App\Http\Middleware\EnsureUserIsActive::
 
     // Image Upload
     Route::post('/upload-image', \App\Http\Controllers\ImageUploadController::class)->name('image.upload');
+
+    // Project Files
+    Route::post('projects/{project}/files', [\App\Http\Controllers\ProjectFileController::class, 'store'])->name('projects.files.store');
+    Route::delete('files/{file}', [\App\Http\Controllers\ProjectFileController::class, 'destroy'])->name('files.destroy');
+    Route::post('files/{file}/toggle-public', [\App\Http\Controllers\ProjectFileController::class, 'togglePublic'])->name('files.toggle-public');
+    Route::get('files/{file}', [\App\Http\Controllers\ProjectFileController::class, 'show'])->name('files.show');
+    Route::get('files/{file}/download', [\App\Http\Controllers\ProjectFileController::class, 'download'])->name('files.download');
 
 });
 
