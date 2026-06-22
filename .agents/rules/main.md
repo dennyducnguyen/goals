@@ -3,6 +3,7 @@
 - Frontend: Blade, Vite, TailwindCSS (có thể có Vue/React tuỳ cấu hình nội bộ)
 - Database: MySQL/SQLite (được cấu hình trong .env)
 - Các ghi chú kiến trúc hoặc quy tắc riêng sẽ được cập nhật ở đây khi có thay đổi.
+- **Tiêu đề trang (Title)**: Dự án sử dụng Inertia React. Logic đặt tiêu đề (fallback và suffix) được quản lý tập trung ở `resources/js/app.jsx` và cấu hình qua `APP_NAME` trong `.env`. Tiêu đề ban đầu chưa render React được cấu hình ở `resources/views/app.blade.php`.
 
 ## Quy trình Kiểm tra & Phục hồi (Check & Fix) sau khi Deploy
 Dự án được cấu hình deploy tự động qua GitHub Actions lên server `171.244.29.124`. Khi người dùng yêu cầu "kiểm tra server", "kiểm tra deploy", AI phải thực hiện các bước sau:
