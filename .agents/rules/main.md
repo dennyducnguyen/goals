@@ -11,3 +11,8 @@ Dự án được cấu hình deploy tự động qua GitHub Actions lên server
 3. Đọc 100 dòng cuối của file `storage/logs/laravel.log` để tìm xem có lỗi nào xuất hiện gần đây không (e.g. `tail -n 100 storage/logs/laravel.log`).
 4. Nếu phát hiện lỗi (ví dụ chưa migrate, thiếu file `.env`, lỗi build npm), tự động đề xuất lệnh chạy sửa lỗi qua SSH hoặc tự động sửa nếu lỗi đơn giản.
 5. Nếu không có lỗi, báo cáo cho người dùng là "Hệ thống hoạt động bình thường, deploy thành công".
+
+## Môi trường Server & Yêu cầu hệ thống (VPS Production)
+- **Node.js**: Yêu cầu bắt buộc **Node.js v20+** (do dự án dùng Vite bản mới). (Đã cấu hình trên VPS).
+- **PHP Extensions**: Kịch bản chạy nền (CLI) đang dùng PHP 8.5. Cần đảm bảo trên server luôn có đủ `php8.5-xml` (cho Composer) và `php8.5-mbstring` (để chạy các lệnh cache Laravel). (Đã cấu hình trên VPS).
+- **CI/CD tự động**: Mọi thay đổi code khi được `git push` lên nhánh `main` sẽ kích hoạt GitHub Actions. Action này sẽ SSH tự động vào server, sau đó gọi file `/var/www/goals.imgroup.vn/htdocs/deploy.sh` để tiến hành cài dependencies (`npm run build`, `composer install`), dọn cache và chạy route cache.
